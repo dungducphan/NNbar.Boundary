@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.12)
+project(SmallestEnclosingCircle)
+
+set(CMAKE_CXX_STANDARD 17)
+
+add_library(SmallestEnclosingCircle SHARED SmallestEnclosingCircle.cpp SmallestEnclosingCircle.h)
+
+add_library(ClusterMinimalEnclosingCircle SHARED ClusterMinimalEnclosingCircle.cpp ClusterMinimalEnclosingCircle.h)
+
+add_executable(UnitTest UnitTest/UnitTest.cpp)
+target_link_libraries(UnitTest ClusterMinimalEnclosingCircle)
