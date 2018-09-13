@@ -51,7 +51,7 @@ public :
     TBranch *b_z_YV;   //!
     TBranch *b_e_YV;   //!
 
-    EventAnalyzer(TTree *tree = 0);
+    EventAnalyzer(std::string fileName, TTree *tree = 0);
 
     virtual ~EventAnalyzer();
 
@@ -71,7 +71,28 @@ public :
 
     virtual void CircularGrade();
 
+    virtual void SetNEvents(unsigned int n);
+
+    virtual std::pair<TH1D*, TH1D*> GetRatioHist();
+
+    virtual std::pair<TH2D*, TH2D*> GetAreaTH2Hist();
+
+    virtual void SetDiffString(std::string diffStr);
+
 private:
+    std::string kDiffString;
+
+    unsigned int kNEvents;
+
+    TH2D* ratioX_y;
+    TH2D* ratioY_y;
+
+    TH2D* ec_ch_X;
+    TH2D* ec_ch_Y;
+
+    TH1D* ratioX;
+    TH1D* ratioY;
+
     ClusterMinimalEnclosingCircle* minimalEnclosingCircleFinderX;
     ClusterMinimalEnclosingCircle* minimalEnclosingCircleFinderY;
     ClusterConvexHullEstimator*    convexHullFinderX;

@@ -1,14 +1,13 @@
 #include "EventAnalyzer.h"
 
-EventAnalyzer::EventAnalyzer(TTree *tree) : fChain(0) {
+EventAnalyzer::EventAnalyzer(std::string fileName, TTree *tree) : fChain(0) {
     if (tree == 0) {
-        TFile *f = (TFile *) gROOT->GetListOfFiles()->FindObject(
-                "../Data/Ch1/NNbar_CosmicClusterEventDisplay_Hist.Ch1.root");
+        TFile *f = (TFile *) gROOT->GetListOfFiles()->FindObject(fileName.c_str());
         if (!f || !f->IsOpen()) {
-            f = new TFile("../Data/Ch1/NNbar_CosmicClusterEventDisplay_Hist.Ch1.root");
+            f = new TFile(fileName.c_str());
         }
-        TDirectory *dir = (TDirectory *) f->Get(
-                "../Data/Ch1/NNbar_CosmicClusterEventDisplay_Hist.Ch1.root:/cosmicclustereventdisplay");
+        std::string folderStr = fileName + ":/cosmicclustereventdisplay";
+        TDirectory *dir = (TDirectory *) f->Get(folderStr.c_str());
         dir->GetObject("clusterTree_", tree);
 
     }
@@ -208,14 +207,21 @@ void EventAnalyzer::Loop(unsigned int evtId) {
 void EventAnalyzer::CircularGrade() {
     if (fChain == 0) return;
 
-    TH2D* ec_ch_X = new TH2D("ec_ch_X", "ec_ch_X", 1000, 0., 100000., 1000, 0., 50000.);
-    TH2D* ec_ch_Y = new TH2D("ec_ch_Y", "ec_ch_Y", 1000, 0., 100000., 1000, 0., 50000.);
+    // Correlation between ratio and y position
+    ratioX_y = new TH2D("ratioX_y", Form("Ratio-Ypos X - %s", kDiffString.c_str()), 100, -800., 800., 100, 0., 1.);
+    ratioY_y = new TH2D("ratioY_y", Form("Ratio-Ypos Y - %s", kDiffString.c_str()), 100, -800., 800., 100, 0., 1.);
 
-    TH1D* ratioX = new TH1D("ratioX", "ratioX", 50, 0, 1.);
-    TH1D* ratioY = new TH1D("ratioY", "ratioY", 50, 0, 1.);
+    // Convex Area and Enclosing Circle Area (TH2)
+    ec_ch_X = new TH2D("ec_ch_X", Form("Convec-Enclosing X - %s", kDiffString.c_str()), 100, 0., 100000., 100, 0., 50000.);
+    ec_ch_Y = new TH2D("ec_ch_Y", Form("Convec-Enclosing Y - %s", kDiffString.c_str()), 100, 0., 100000., 100, 0., 50000.);
+
+    // Ratio of Convex Area and Enclosing Circle
+    ratioX = new TH1D("ratioX", Form("Convec-Enclosing Ratio X - %s", kDiffString.c_str()), 100, 0, 1.);
+    ratioY = new TH1D("ratioY", Form("Convec-Enclosing Ratio Y - %s", kDiffString.c_str()), 100, 0, 1.);
 
     Long64_t nentries = fChain->GetEntriesFast();
-    for (unsigned int evtId = 0; evtId < 100; evtId++) {
+    for (unsigned int evtId = 0; evtId < kNEvents; evtId++) {
+        if (evtId % 100 == 0) std::cout << "Event number: " << evtId << "." << std::endl;
         minimalEnclosingCircleFinderX = new ClusterMinimalEnclosingCircle();
         convexHullFinderX = new ClusterConvexHullEstimator();
         minimalEnclosingCircleFinderY = new ClusterMinimalEnclosingCircle();
@@ -243,7 +249,6 @@ void EventAnalyzer::CircularGrade() {
         minimalEnclosingCircleFinderX->SetPoints(XViewCluster);
         double enclosingAreaX = minimalEnclosingCircleFinderX->GetMinimalEnclosingCircleArea();
         convexHullFinderX->SetPoints(XViewCluster);
-        std::cout << enclosingAreaX << std::endl;
         double convexAreaX = convexHullFinderX->GetConvexHullArea();
 
         minimalEnclosingCircleFinderY->SetPoints(YViewCluster);
@@ -261,25 +266,20 @@ void EventAnalyzer::CircularGrade() {
         ratioX->Fill(convexAreaX/enclosingAreaX);
         ratioY->Fill(convexAreaY/enclosingAreaY);
     }
+}
 
-    TCanvas* c = new TCanvas("c", "c", 2400, 1200);
-    gStyle->SetOptStat(0);
-    c->Divide(2,1);
-    c->cd(1);
-    ec_ch_X->Draw("COLZ");
-    c->cd(2);
-    ec_ch_Y->Draw("COLZ");
-    c->SaveAs("CircularDegree.pdf");
-    delete c;
+void EventAnalyzer::SetNEvents(unsigned int n) {
+    kNEvents = n;
+}
 
-    TCanvas* c1 = new TCanvas("c1", "c1", 2400, 1200);
-    gStyle->SetOptStat(0);
-    c1->cd();
-    c1->Divide(2,1);
-    c1->cd(1);
-    ratioX->Draw();
-    c1->cd(2);
-    ratioY->Draw();
-    c1->SaveAs("CircularDegreeTH1D.pdf");
-    delete c1;
+std::pair<TH1D *, TH1D *> EventAnalyzer::GetRatioHist() {
+    return std::make_pair(ratioX, ratioY);
+}
+
+std::pair<TH2D *, TH2D *> EventAnalyzer::GetAreaTH2Hist() {
+    return std::make_pair(ec_ch_X, ec_ch_Y);
+}
+
+void EventAnalyzer::SetDiffString(std::string diffStr) {
+    kDiffString = diffStr;
 }
