@@ -208,20 +208,21 @@ void EventAnalyzer::CircularGrade() {
     if (fChain == 0) return;
 
     // Correlation between ratio and y position
-    ratioX_y = new TH2D("ratioX_y", Form("Ratio-Ypos X - %s", kDiffString.c_str()), 100, -800., 800., 100, 0., 1.);
-    ratioY_y = new TH2D("ratioY_y", Form("Ratio-Ypos Y - %s", kDiffString.c_str()), 100, -800., 800., 100, 0., 1.);
+    ratioX_y = new TH2D("ratioX_y", Form("%s - X view; Area Ratio; Avg. Y position (cm)", kDiffString.c_str()), 100, -800., 800., 100, 0., 1.);
+    ratioY_y = new TH2D("ratioY_y", Form("%s - Y view; Area Ratio; Avg. Y position (cm)", kDiffString.c_str()), 100, -800., 800., 100, 0., 1.);
 
     // Convex Area and Enclosing Circle Area (TH2)
-    ec_ch_X = new TH2D("ec_ch_X", Form("Convec-Enclosing X - %s", kDiffString.c_str()), 100, 0., 100000., 100, 0., 50000.);
-    ec_ch_Y = new TH2D("ec_ch_Y", Form("Convec-Enclosing Y - %s", kDiffString.c_str()), 100, 0., 100000., 100, 0., 50000.);
+    ec_ch_X = new TH2D("ec_ch_X", Form("%s - X view; C-Hull Area (cm#{2}); MEC Area (cm#{2})", kDiffString.c_str()), 100, 0., 100000., 100, 0., 50000.);
+    ec_ch_Y = new TH2D("ec_ch_Y", Form("%s - Y view; C-Hull Area (cm#{2}); MEC Area (cm#{2})", kDiffString.c_str()), 100, 0., 100000., 100, 0., 50000.);
 
     // Ratio of Convex Area and Enclosing Circle
-    ratioX = new TH1D("ratioX", Form("Convec-Enclosing Ratio X - %s", kDiffString.c_str()), 100, 0, 1.);
-    ratioY = new TH1D("ratioY", Form("Convec-Enclosing Ratio Y - %s", kDiffString.c_str()), 100, 0, 1.);
+    ratioX = new TH1D("ratioX", Form("%s - X view; Area Ratio;", kDiffString.c_str()), 50, 0, 1.);
+    ratioY = new TH1D("ratioY", Form("%s - Y view; Area Ratio;", kDiffString.c_str()), 50, 0, 1.);
+    rX_rY  = new TH2D("rX_rY",  Form("%s; Area Ratio in X view; Area Ratio in Y view", kDiffString.c_str()), 50, 0., 1., 50, 0., 1.);
 
     Long64_t nentries = fChain->GetEntriesFast();
     for (unsigned int evtId = 0; evtId < kNEvents; evtId++) {
-        if (evtId % 100 == 0) std::cout << "Event number: " << evtId << "." << std::endl;
+        if (evtId % 1000 == 0) std::cout << "Event number: " << evtId << "." << std::endl;
         minimalEnclosingCircleFinderX = new ClusterMinimalEnclosingCircle();
         convexHullFinderX = new ClusterConvexHullEstimator();
         minimalEnclosingCircleFinderY = new ClusterMinimalEnclosingCircle();
@@ -229,6 +230,7 @@ void EventAnalyzer::CircularGrade() {
 
         std::vector<std::pair<double, double> > XViewCluster;
         std::vector<std::pair<double, double> > YViewCluster;
+        std::vector<double> YViewCell;
 
         Long64_t nbytes = 0, nb = 0;
         for (Long64_t jentry = 0; jentry < nentries; jentry++) {
@@ -243,8 +245,15 @@ void EventAnalyzer::CircularGrade() {
                 XViewCluster.push_back(std::make_pair(z_XV, x_XV));
             } else {
                 YViewCluster.push_back(std::make_pair(z_YV, y_YV));
+                YViewCell.push_back(y_YV);
             }
         }
+
+        double avgYposition = 0.;
+        for (unsigned int k = 0; k < YViewCell.size(); k++) {
+            avgYposition += YViewCell.at(k);
+        }
+        avgYposition = avgYposition/YViewCell.size();
 
         minimalEnclosingCircleFinderX->SetPoints(XViewCluster);
         double enclosingAreaX = minimalEnclosingCircleFinderX->GetMinimalEnclosingCircleArea();
@@ -261,10 +270,11 @@ void EventAnalyzer::CircularGrade() {
         delete convexHullFinderX;
         delete convexHullFinderY;
 
-        ec_ch_X->Fill(enclosingAreaX, convexAreaX);
-        ec_ch_Y->Fill(enclosingAreaY, convexAreaY);
-        ratioX->Fill(convexAreaX/enclosingAreaX);
-        ratioY->Fill(convexAreaY/enclosingAreaY);
+        ratioX_y->Fill(avgYposition, convexAreaX/enclosingAreaX);
+        ratioY_y->Fill(avgYposition, convexAreaY/enclosingAreaY);
+        if (convexAreaX/enclosingAreaX != 0.) ratioX->Fill(convexAreaX/enclosingAreaX);
+        if (convexAreaY/enclosingAreaY != 0.) ratioY->Fill(convexAreaY/enclosingAreaY);
+        if ((convexAreaY/enclosingAreaX != 0.) || (convexAreaY/enclosingAreaY != 0.)) rX_rY->Fill(convexAreaX/enclosingAreaX, convexAreaY/enclosingAreaY);
     }
 }
 
@@ -276,10 +286,14 @@ std::pair<TH1D *, TH1D *> EventAnalyzer::GetRatioHist() {
     return std::make_pair(ratioX, ratioY);
 }
 
-std::pair<TH2D *, TH2D *> EventAnalyzer::GetAreaTH2Hist() {
-    return std::make_pair(ec_ch_X, ec_ch_Y);
+std::pair<TH2D *, TH2D *> EventAnalyzer::GetRatioYCorrTH2Hist() {
+    return std::make_pair(ratioX_y, ratioY_y);
 }
 
 void EventAnalyzer::SetDiffString(std::string diffStr) {
     kDiffString = diffStr;
+}
+
+TH2D *EventAnalyzer::GetRatioTH2Hist() {
+    return rX_rY;
 }

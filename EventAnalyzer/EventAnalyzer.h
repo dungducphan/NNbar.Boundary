@@ -75,7 +75,9 @@ public :
 
     virtual std::pair<TH1D*, TH1D*> GetRatioHist();
 
-    virtual std::pair<TH2D*, TH2D*> GetAreaTH2Hist();
+    virtual TH2D* GetRatioTH2Hist();
+
+    virtual std::pair<TH2D*, TH2D*> GetRatioYCorrTH2Hist();
 
     virtual void SetDiffString(std::string diffStr);
 
@@ -92,6 +94,7 @@ private:
 
     TH1D* ratioX;
     TH1D* ratioY;
+    TH2D* rX_rY;
 
     ClusterMinimalEnclosingCircle* minimalEnclosingCircleFinderX;
     ClusterMinimalEnclosingCircle* minimalEnclosingCircleFinderY;
