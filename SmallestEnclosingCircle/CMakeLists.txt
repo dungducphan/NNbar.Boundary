@@ -3,8 +3,6 @@ project(SmallestEnclosingCircle)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_library(SmallestEnclosingCircle SHARED SmallestEnclosingCircle.cpp SmallestEnclosingCircle.h)
-
 add_library(ClusterMinimalEnclosingCircle SHARED ClusterMinimalEnclosingCircle.cpp ClusterMinimalEnclosingCircle.h)
 
 add_executable(UnitTest UnitTest/UnitTest.cpp)

@@ -3,10 +3,17 @@ project(ConvexHull)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(BOOST_INCLUDE_DIR /usr/local/Cellar/boost/1.63.0/include/)
-set(BOOST_LIBRARY_DIR /usr/local/Cellar/boost/1.63.0/lib)
+if(APPLE)
+    set(BOOST_INCLUDE_DIR /usr/local/Cellar/boost/1.63.0/include/)
+    set(BOOST_LIBRARY_DIR /usr/local/Cellar/boost/1.63.0/lib)
+    find_package(BOOST COMPONENTS SYSTEM FILESYSTEM REQUIRED)
+endif()
 
-find_package(BOOST COMPONENTS SYSTEM FILESYSTEM REQUIRED)
+if(UNIX)
+    set(BOOST_INCLUDE_DIR /usr/include/boost/)
+    set(BOOST_LIBRARY_DIR /usr/lib/x86_64-linux-gnu/)
+endif()
+
 include_directories(${BOOST_INCLUDE_DIR})
 link_directories(${BOOST_LIBRARY_DIR})
 

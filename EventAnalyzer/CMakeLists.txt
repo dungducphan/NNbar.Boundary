@@ -2,24 +2,35 @@ cmake_minimum_required(VERSION 3.12)
 project(EventAnalyzer)
 
 set(CMAKE_CXX_STANDARD 17)
-set(BOOST_INCLUDE_DIR /usr/local/Cellar/boost/1.63.0/include/)
-set(BOOST_LIBRARY_DIR /usr/local/Cellar/boost/1.63.0/lib)
+if(UNIX AND NOT APPLE)
+    set(CMAKE_CXX_FLAGS -fext-numeric-literals)
+endif()
+
+if(APPLE)
+    set(BOOST_INCLUDE_DIR /usr/local/Cellar/boost/1.63.0/include/)
+    set(BOOST_LIBRARY_DIR /usr/local/Cellar/boost/1.63.0/lib)
+    find_package(BOOST COMPONENTS SYSTEM FILESYSTEM REQUIRED)
+endif()
+
+if(UNIX AND NOT APPLE)
+    set(BOOST_INCLUDE_DIR /usr/include/boost/)
+    set(BOOST_LIBRARY_DIR /usr/lib/x86_64-linux-gnu/)
+endif()
 
 find_package(ROOT REQUIRED)
-find_package(BOOST COMPONENTS SYSTEM FILESYSTEM REQUIRED)
 
 include(${ROOT_USE_FILE})
 
 include_directories(
-        /Users/dphan90/NOvA.NNbar/ConvexHull/
-        /Users/dphan90/NOvA.NNbar/SmallestEnclosingCircle/
+        ../ConvexHull/
+        ../SmallestEnclosingCircle/
+        ${BOOST_INCLUDE_DIR}
 )
 
-include_directories(${BOOST_INCLUDE_DIR})
 link_directories(
         ${BOOST_LIBRARY_DIR}
-        /Users/dphan90/NOvA.NNbar/ConvexHull/cmake-build-debug/
-        /Users/dphan90/NOvA.NNbar/SmallestEnclosingCircle/cmake-build-debug/
+        ../ConvexHull/cmake-build-debug/
+        ../SmallestEnclosingCircle/cmake-build-debug/
 )
 
 add_executable(EventAnalyzer main.cpp EventAnalyzer.cpp EventAnalyzer.h)

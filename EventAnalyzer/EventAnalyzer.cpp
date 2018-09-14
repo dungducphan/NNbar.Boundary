@@ -208,8 +208,8 @@ void EventAnalyzer::CircularGrade() {
     if (fChain == 0) return;
 
     // Correlation between ratio and y position
-    ratioX_y = new TH2D("ratioX_y", Form("%s - X view; Area Ratio; Avg. Y position (cm)", kDiffString.c_str()), 100, -800., 800., 100, 0., 1.);
-    ratioY_y = new TH2D("ratioY_y", Form("%s - Y view; Area Ratio; Avg. Y position (cm)", kDiffString.c_str()), 100, -800., 800., 100, 0., 1.);
+    ratioX_y = new TH2D("ratioX_y", Form("%s - X view; Avg. Y position (cm); Area Ratio", kDiffString.c_str()), 100, -800., 800., 100, 0., 1.);
+    ratioY_y = new TH2D("ratioY_y", Form("%s - Y view; Avg. Y position (cm); Area Ratio", kDiffString.c_str()), 100, -800., 800., 100, 0., 1.);
 
     // Convex Area and Enclosing Circle Area (TH2)
     ec_ch_X = new TH2D("ec_ch_X", Form("%s - X view; C-Hull Area (cm#{2}); MEC Area (cm#{2})", kDiffString.c_str()), 100, 0., 100000., 100, 0., 50000.);

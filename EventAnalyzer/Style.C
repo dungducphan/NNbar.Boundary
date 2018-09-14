@@ -119,9 +119,9 @@ void GeneralStyle() {
 }
 
 void StyleLinearLinear(TCanvas* c) {
-    c->SetRightMargin(0.15);
-    c->SetLeftMargin(0.15);
-    c->SetBottomMargin(0.15);
+    c->SetRightMargin(0.25);
+    c->SetLeftMargin(0.25);
+    c->SetBottomMargin(0.25);
 }
 
 void StyleLogLog(TCanvas* c) {
@@ -133,16 +133,16 @@ void StyleLogLog(TCanvas* c) {
 }
 
 void StyleLinearLog(TCanvas* c) {
-    c->SetRightMargin(0.15);
-    c->SetLeftMargin(0.15);
-    c->SetBottomMargin(0.15);
+    c->SetRightMargin(0.25);
+    c->SetLeftMargin(0.25);
+    c->SetBottomMargin(0.25);
     c->SetLogy();
 }
 
 void StyleLogLinear(TCanvas* c) {
-    c->SetRightMargin(0.15);
-    c->SetLeftMargin(0.15);
-    c->SetBottomMargin(0.15);
+    c->SetRightMargin(0.25);
+    c->SetLeftMargin(0.25);
+    c->SetBottomMargin(0.25);
     c->SetLogx();
 }
 
