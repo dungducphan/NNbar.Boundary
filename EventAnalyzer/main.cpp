@@ -5,6 +5,7 @@
 int main() {
     GeneralStyle();
 
+/*
     EventAnalyzer* eaCosmic = new EventAnalyzer("../Data/CosmicVsSignal/NNbar_CosmicClusterEventDisplay_Cosmic.root");
     eaCosmic->SetDiffString("Cosmic");
     for (unsigned int i = 0; i < 20; i++) {
@@ -19,8 +20,8 @@ int main() {
 
     delete eaCosmic;
     delete eaSignal;
+*/
 
-/*
     EventAnalyzer* eaCosmic = new EventAnalyzer("../Data/CosmicVsSignal/NNbar_CosmicClusterEventDisplay_Cosmic.root");
     eaCosmic->SetDiffString("Cosmic");
     eaCosmic->SetNEvents(10000);
@@ -153,6 +154,6 @@ int main() {
     gPad->SetTopMargin(0.15);
     g->SaveAs("CircularVsY.pdf");
     delete g;
-*/
+
     return 0;
 }

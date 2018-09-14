@@ -225,6 +225,8 @@ void EventAnalyzer::CircularGrade() {
     double averageYposition;
     bool   isCosmic;
 
+    TFile* outFile = new TFile(Form("NNbar-Boundary-%s.root", kDiffString.c_str()), "RECREATE");
+    outFile->cd();
     tree = new TTree("NNBarBoundary","NNBar Boundary Variables");
     tree->Branch("isCosmic", &isCosmic, "isCosmic/B");
     tree->Branch("convexHullAreaXV", &convexHullAreaXV, "convexHullAreaXV/D");
@@ -310,8 +312,6 @@ void EventAnalyzer::CircularGrade() {
         }
     }
 
-    TFile* outFile = new TFile(Form("NNbar-Boundary-%s.root", kDiffString.c_str()), "RECREATE");
-    outFile->cd();
     tree->Write();
     outFile->Close();
 }
