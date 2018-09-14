@@ -114,10 +114,10 @@ void EventAnalyzer::Loop(unsigned int evtId) {
     std::vector< std::pair<double, double> > ConvexSetY = convexHullFinderY->GetConvexHullPoints();
 
     // EVD cluster
-//    TH2D* XViewEVD = new TH2D("XView", "XView", 12000, 0, 6000, 3200, -800, 800);
-//    TH2D* YViewEVD = new TH2D("YView", "YView", 12000, 0, 6000, 3200, -800, 800);
-    TH2D* XViewEVD = new TH2D("XView", "XView", 2000, 2500, 3500, 2000, -500, 500); // Zoom
-    TH2D* YViewEVD = new TH2D("YView", "YView", 2000, 2500, 3500, 2000, -500, 500); // Zoom
+    TH2D* XViewEVD = new TH2D("XView", "XView", 12000, 0, 6000, 3200, -800, 800);
+    TH2D* YViewEVD = new TH2D("YView", "YView", 12000, 0, 6000, 3200, -800, 800);
+//    TH2D* XViewEVD = new TH2D("XView", "XView", 2000, 2500, 3500, 2000, -500, 500); // Zoom
+//    TH2D* YViewEVD = new TH2D("YView", "YView", 2000, 2500, 3500, 2000, -500, 500); // Zoom
 
     for (unsigned int i = 0; i < XViewCluster.size(); i++) {
         double tmp_x = XViewCluster.at(i).first;
@@ -173,16 +173,16 @@ void EventAnalyzer::Loop(unsigned int evtId) {
     TGraph* gr_convexX = new TGraph(convexHullNX, ConvexSetArrayX_x, ConvexSetArrayX_y);
     gr_convexX->SetLineColor(kBlue);
     gr_convexX->SetMarkerColor(kBlue);
-    gr_convexX->SetMarkerSize(3);
+    gr_convexX->SetMarkerSize(1);
 
     TGraph* gr_convexY = new TGraph(convexHullNY, ConvexSetArrayY_x, ConvexSetArrayY_y);
     gr_convexY->SetLineColor(kBlue);
     gr_convexY->SetMarkerColor(kBlue);
-    gr_convexY->SetMarkerSize(3);
+    gr_convexY->SetMarkerSize(1);
 
     // Drawing
-    TCanvas* c = new TCanvas("c", "c", 2400, 4800); // Zoom
-//    TCanvas* c = new TCanvas("c", "c", 2400, 1400);
+//    TCanvas* c = new TCanvas("c", "c", 2400, 4800); // Zoom
+    TCanvas* c = new TCanvas("c", "c", 2400, 1400);
     gStyle->SetOptStat(0);
     c->Divide(1,2);
 
@@ -197,7 +197,7 @@ void EventAnalyzer::Loop(unsigned int evtId) {
     gr_circleY->Draw("L same");
     gr_convexY->Draw("PL same");
 
-    c->SaveAs(Form("Plots/Evt_%i.pdf", evtId));
+    c->SaveAs(Form("Plots/Evt_%i-%s.pdf", evtId, kDiffString.c_str()));
 
     delete XViewEVD;
     delete YViewEVD;
@@ -220,6 +220,22 @@ void EventAnalyzer::CircularGrade() {
     ratioY = new TH1D("ratioY", Form("%s - Y view; Area Ratio;", kDiffString.c_str()), 50, 0, 1.);
     rX_rY  = new TH2D("rX_rY",  Form("%s; Area Ratio in X view; Area Ratio in Y view", kDiffString.c_str()), 50, 0., 1., 50, 0., 1.);
 
+    double convexHullAreaXV, convexHullAreaYV, minimalEnclosingCircleAreaXV, minimalEnclosingCircleAreaYV;
+    double areaRatioXV, areaRatioYV;
+    double averageYposition;
+    bool   isCosmic;
+
+    tree = new TTree("NNBarBoundary","NNBar Boundary Variables");
+    tree->Branch("isCosmic", &isCosmic, "isCosmic/B");
+    tree->Branch("convexHullAreaXV", &convexHullAreaXV, "convexHullAreaXV/D");
+    tree->Branch("convexHullAreaYV", &convexHullAreaYV, "convexHullAreaYV/D");
+    tree->Branch("minimalEnclosingCircleAreaXV", &minimalEnclosingCircleAreaXV, "minimalEnclosingCircleAreaXV/D");
+    tree->Branch("minimalEnclosingCircleAreaYV", &minimalEnclosingCircleAreaYV, "minimalEnclosingCircleAreaYV/D");
+    tree->Branch("areaRatioXV", &areaRatioXV, "areaRatioXV/D");
+    tree->Branch("areaRatioYV", &areaRatioYV, "areaRatioYV/D");
+    tree->Branch("averageYposition", &averageYposition, "averageYposition/D");
+
+    isCosmic = (kDiffString == "Cosmic");
     Long64_t nentries = fChain->GetEntriesFast();
     for (unsigned int evtId = 0; evtId < kNEvents; evtId++) {
         if (evtId % 1000 == 0) std::cout << "Event number: " << evtId << "." << std::endl;
@@ -270,12 +286,34 @@ void EventAnalyzer::CircularGrade() {
         delete convexHullFinderX;
         delete convexHullFinderY;
 
-        ratioX_y->Fill(avgYposition, convexAreaX/enclosingAreaX);
-        ratioY_y->Fill(avgYposition, convexAreaY/enclosingAreaY);
-        if (convexAreaX/enclosingAreaX != 0.) ratioX->Fill(convexAreaX/enclosingAreaX);
-        if (convexAreaY/enclosingAreaY != 0.) ratioY->Fill(convexAreaY/enclosingAreaY);
-        if ((convexAreaY/enclosingAreaX != 0.) || (convexAreaY/enclosingAreaY != 0.)) rX_rY->Fill(convexAreaX/enclosingAreaX, convexAreaY/enclosingAreaY);
+        bool recordThisEvt = !((convexAreaX == 0.) && (convexAreaY == 0.) && (enclosingAreaX == 0.) && (enclosingAreaY == 0.));
+        if (recordThisEvt) {
+            ratioX->Fill(convexAreaX/enclosingAreaX);
+            ratioX_y->Fill(avgYposition, convexAreaX/enclosingAreaX);
+
+            ratioY->Fill(convexAreaY/enclosingAreaY);
+            ratioY_y->Fill(avgYposition, convexAreaY/enclosingAreaY);
+
+            rX_rY->Fill(convexAreaX/enclosingAreaX, convexAreaY/enclosingAreaY);
+
+            convexHullAreaXV = convexAreaX;
+            minimalEnclosingCircleAreaXV = enclosingAreaX;
+            averageYposition = avgYposition;
+            areaRatioXV = convexAreaX/enclosingAreaX;
+
+            convexHullAreaYV = convexAreaY;
+            minimalEnclosingCircleAreaYV = enclosingAreaY;
+            averageYposition = avgYposition;
+            areaRatioYV = convexAreaY/enclosingAreaY;
+
+            tree->Fill();
+        }
     }
+
+    TFile* outFile = new TFile(Form("NNbar-Boundary-%s.root", kDiffString.c_str()), "RECREATE");
+    outFile->cd();
+    tree->Write();
+    outFile->Close();
 }
 
 void EventAnalyzer::SetNEvents(unsigned int n) {

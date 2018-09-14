@@ -82,6 +82,8 @@ public :
     virtual void SetDiffString(std::string diffStr);
 
 private:
+    TTree *tree;
+
     std::string kDiffString;
 
     unsigned int kNEvents;

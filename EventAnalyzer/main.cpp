@@ -7,7 +7,23 @@ int main() {
 
     EventAnalyzer* eaCosmic = new EventAnalyzer("../Data/CosmicVsSignal/NNbar_CosmicClusterEventDisplay_Cosmic.root");
     eaCosmic->SetDiffString("Cosmic");
-    eaCosmic->SetNEvents(2000);
+    for (unsigned int i = 0; i < 20; i++) {
+        eaCosmic->Loop(i);
+    }
+
+    EventAnalyzer* eaSignal = new EventAnalyzer("../Data/CosmicVsSignal/NNbar_CosmicClusterEventDisplay_Signal.root");
+    eaSignal->SetDiffString("Signal");
+    for (unsigned int i = 0; i < 20; i++) {
+        eaSignal->Loop(i);
+    }
+
+    delete eaCosmic;
+    delete eaSignal;
+
+/*
+    EventAnalyzer* eaCosmic = new EventAnalyzer("../Data/CosmicVsSignal/NNbar_CosmicClusterEventDisplay_Cosmic.root");
+    eaCosmic->SetDiffString("Cosmic");
+    eaCosmic->SetNEvents(10000);
     eaCosmic->CircularGrade();
     std::pair<TH1D*, TH1D*> RatioCosmic = eaCosmic->GetRatioHist();
     std::pair<TH2D*, TH2D*> RatioYCorrCosmic = eaCosmic->GetRatioYCorrTH2Hist();
@@ -15,7 +31,7 @@ int main() {
 
     EventAnalyzer* eaSignal = new EventAnalyzer("../Data/CosmicVsSignal/NNbar_CosmicClusterEventDisplay_Signal.root");
     eaSignal->SetDiffString("Signal");
-    eaSignal->SetNEvents(2000);
+    eaSignal->SetNEvents(10000);
     eaSignal->CircularGrade();
     std::pair<TH1D*, TH1D*> RatioSignal = eaSignal->GetRatioHist();
     std::pair<TH2D*, TH2D*> RatioYCorrSignal = eaSignal->GetRatioYCorrTH2Hist();
@@ -137,6 +153,6 @@ int main() {
     gPad->SetTopMargin(0.15);
     g->SaveAs("CircularVsY.pdf");
     delete g;
-
+*/
     return 0;
 }
